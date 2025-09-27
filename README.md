@@ -7,10 +7,11 @@ The idea behind this project is learning C++ and systems programming.
 
 TODO:
 
-- [ ] Build system (CMake)
-- [ ] Project scaffold
-- [ ] CI (GitHub actions)
+- [x] Build system (CMake)
+- [x] Project scaffold
+- [x] CI (GitHub actions)
 - [ ] Architecture
 - [ ] Test environment (gtest?)
-- [ ] Event loop (epoll and kqueue)
-- [ ] Connection life cycle (accept->read->close).
+- [x] epoll (event loop)
+- [ ] kqueue (event loop)
+- [x] Connection life cycle (accept->read->close).

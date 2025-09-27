@@ -57,9 +57,13 @@ if (UNIX AND NOT APPLE)
 endif()
 
 add_library(uchuva
+  # The guts
   src/eventloop.cc
   src/tcpclient.cc
   src/tcpserver.cc
+  # The parser
+  src/http-lexer.cc
+  src/http-parser.cc
 )
 
 target_include_directories(uchuva
@@ -70,3 +74,6 @@ target_include_directories(uchuva
 # ECHO SERVER BUILD
 add_executable(echoserver tests/echo_server.cc)
 target_link_libraries(echoserver PRIVATE uchuva)
+
+add_executable(httpparser tests/parser.cc)
+target_link_libraries(httpparser PRIVATE uchuva)

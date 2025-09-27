@@ -12,12 +12,12 @@ EventLoop::EventLoop() : running_(false) {
   backend_fd_ = epoll_create1(0);
   if (backend_fd_ < 0) {
     fprintf(stderr, "Error creating the epoll/kqueue fd");
-    exit(1);
+    ::exit(1);
   }
 }
 
 EventLoop::~EventLoop() {
-  close(backend_fd_);
+  ::close(backend_fd_);
 }
 
 

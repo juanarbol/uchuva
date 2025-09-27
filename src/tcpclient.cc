@@ -99,5 +99,7 @@ void TCPClient::close() {
       ::close(fd_);
       fd_ = -1;
     }
+
+    if (on_close_) on_close_();
   });
 }

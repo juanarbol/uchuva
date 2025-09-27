@@ -24,6 +24,7 @@ void TCPServer::bind(const std::string& host, uint16_t port) {
   listen_fd_ = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
   if (listen_fd_ < 0) {
     fprintf(stderr, "Failed creating the TCP socket for the server.\n");
+    exit(1);
     return;
   }
 
@@ -34,11 +35,13 @@ void TCPServer::bind(const std::string& host, uint16_t port) {
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port);
   if (::inet_pton(AF_INET, host.c_str(), &addr.sin_addr) <= 0) {
+    exit(1);
     fprintf(stderr, "Invalid bind address.\n");
     return;
   }
 
   if (::bind(listen_fd_, (sockaddr*)&addr, sizeof(addr)) < 0) {
+    exit(1);
     fprintf(stderr, "Bind failed.\n");
     return;
   }
@@ -48,6 +51,7 @@ void TCPServer::bind(const std::string& host, uint16_t port) {
 void TCPServer::listen(std::function<void(TCPClient&)> onConnection) {
   if (::listen(listen_fd_, SOMAXCONN) < 0) {
     fprintf(stderr, "Listen failed.\n");
+    exit(1);
     return;
   }
 
@@ -67,7 +71,6 @@ void TCPServer::handleAccept(uint32_t events) {
   while (true) {
     int clientFd = ::accept4(listen_fd_, nullptr, nullptr,
                              SOCK_NONBLOCK | SOCK_CLOEXEC);
-
     if (clientFd < 0) {
       if (errno == EAGAIN || errno == EWOULDBLOCK) break;
       fprintf(stderr, "Server accept error.\n");

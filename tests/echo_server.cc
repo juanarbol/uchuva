@@ -14,7 +14,6 @@ int main() {
       if (data == "FIN\n" || data == "FIN\r\n" || data == "FIN") {
         client.write("Goodbye!");
         client.close();
-        // server.shutdown();
         loop.stop();
         return;
       }

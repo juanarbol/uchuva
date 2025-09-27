@@ -1,0 +1,39 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer: [none, asan, ubsan, msan]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build clang
+
+      - name: Configure (${{ matrix.sanitizer }})
+        run: |
+          cmake -S . -B build \
+            -G Ninja \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DENABLE_ASAN=$([ "${{ matrix.sanitizer }}" = "asan" ] && echo ON || echo OFF) \
+            -DENABLE_UBSAN=$([ "${{ matrix.sanitizer }}" = "ubsan" ] && echo ON || echo OFF) \
+            -DENABLE_TSAN=$([ "${{ matrix.sanitizer }}" = "tsan" ] && echo ON || echo OFF) \
+            -DENABLE_MSAN=$([ "${{ matrix.sanitizer }}" = "msan" ] && echo ON || echo OFF)
+
+      - name: Build
+        run: cmake --build build -- -k0
