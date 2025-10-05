@@ -15,10 +15,15 @@ void HttpParser::NextToken() {
 }
 
 void HttpParser::ParseHTTP() {
-  while (curToken_.type != Token::Type::EOI) {
-    fprintf(stderr, "PARSED LITERAL: %.*s\n",
+  for (;;) {
+    fprintf(stdout, "Current token: Type=%d, Literal='%.*s'\n",
+            static_cast<int>(curToken_.type),
             (int)curToken_.literal.size(),
             curToken_.literal.data());
+
+    if (curToken_.type == Token::Type::EOI)
+      break;
+
     NextToken();
   }
 

@@ -18,8 +18,12 @@ int main() {
         return;
       }
 
-      fprintf(stdout, "Received: %s \n", data.data());
-      client.write(data); // echo back
+      const std::string res = "HTTP/1.1 200 OK\r\n"
+                              "Content-Length: 12\r\n"
+                              "Content-Type: text/plain\r\n"
+                              "\r\n"
+                              "Hello world!";
+      client.write(res.data()); // echo back
     });
 
     client.onClose([] {

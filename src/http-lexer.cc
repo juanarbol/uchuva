@@ -108,11 +108,69 @@ Token Lexer::consumeVersion() {
   return Token{Token::Type::VERSION, lex};
 }
 
+std::string_view Lexer::readLine() {
+  int start = position_;
+
+  // Case: CRLF CRLF (end of headers)
+  if ((ch_ == '\r' && peek() == '\n')) {
+    // Check next two bytes
+    if (readPosition_ + 1 < input_.size() &&
+        input_[readPosition_ + 1] == '\r' &&
+        readPosition_ + 2 < input_.size() &&
+        input_[readPosition_ + 2] == '\n') {
+      // Do NOT consume them here — let the caller handle BODY transition
+      return std::string_view();  // empty line
+    }
+  }
+
+  // Read until end of line
+  while (ch_ != '\r' && ch_ != '\n' && ch_ != '\0')
+    readChar();
+
+  // Handle CRLF / LF
+  if (ch_ == '\r' && peek() == '\n') {
+    readChar();
+    readChar();
+  } else if (ch_ == '\r' || ch_ == '\n') {
+    readChar();
+  }
+
+  return std::string_view(input_.data() + start, position_ - start - 1);
+}
+
+Token Lexer::consumeHeader() {
+  std::string_view line = readLine();
+
+  // Empty line means end-of-headers
+  if (line.empty()) {
+    op_ = BODY;
+    return NextToken();
+  }
+
+  size_t sep = line.find(':');
+  if (sep == std::string_view::npos)
+    return Token{Token::Type::INVALID, line};
+
+  return Token{Token::Type::HEADER, line};
+}
+
+Token Lexer::consumeBody() {
+  int pos = position_;
+
+  while (ch_ != '\0')
+    readChar();
+
+  std::string_view lex(input_.data() + pos, position_ - pos);
+
+  op_ = EOI;
+  return Token{Token::Type::BODY, lex};
+}
+
 Token Lexer::NextToken() {
   skipSpace();
 
   // Handle EOF reached
-  if (ch_ == EOF) return Token{Token::Type::EOI, "NIL"};
+  if (ch_ == EOF || ch_ == '\0') return Token{Token::Type::EOI, "NIL"};
 
   switch (op_) {
     case METHOD:
@@ -121,10 +179,13 @@ Token Lexer::NextToken() {
       return consumeUrl();
     case VERSION:
       return consumeVersion();
-    // TODO
     case HEADER:
+      return consumeHeader();
     case BODY:
-    default:  // Consume the idenfier and return it as invalid token.
-      return Token{.type = Token::Type::EOI, .literal = "TODO" };
+      return consumeBody();
+    case EOI:
+      return Token{Token::Type::EOI, ""};
+    default:
+      return Token{.type = Token::Type::INVALID, .literal = "WTF" };
   }
 }

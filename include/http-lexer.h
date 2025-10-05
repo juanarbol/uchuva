@@ -4,7 +4,7 @@
 #include "http-token.h"
 #include <string>
 
-enum ops { METHOD, URL, VERSION, HEADER, BODY };
+enum ops { METHOD, URL, VERSION, HEADER, BODY, EOI };
 
 class Lexer {
 public:
@@ -27,6 +27,7 @@ private:
   Token consumeVersion();
   Token consumeHeader();
   Token consumeBody();
+  std::string_view readLine();
 
   const std::string input_;
 
